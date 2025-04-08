@@ -10,7 +10,8 @@ reward_model/checkpoint*/
 reward_model/runs*/
 reward_model/*.json
 reward_model/comment*
-grpo
+grpo/__pycache__
+grpo/wandb
 .vscode
 reward_model/core*
 linshi
