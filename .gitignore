@@ -1,0 +1,15 @@
+reward_model/longest_common_subsequence_data/
+reward_model/raw_data/
+venv
+reward_model/temp*
+reward_model/rm_output
+reward_model/*.pyc
+__pycache__
+reward_model/__pycache__
+reward_model/checkpoint*/
+reward_model/runs*/
+reward_model/*.json
+reward_model/comment*
+grpo
+.vscode
+reward_model/core*
