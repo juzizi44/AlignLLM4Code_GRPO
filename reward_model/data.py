@@ -12,8 +12,8 @@ import torchvision.transforms.functional as F
 
 # from qwen_vl_utils import process_vision_info
 
-from prompt_template.action import ACTION_PROMPT
-from prompt_template.code_quality import (
+from .prompt_template.action import ACTION_PROMPT
+from .prompt_template.code_quality import (
     COMMENT_PROMPT,
     EFFICIENCY_PROMPT,
     MODULARITY_PROMPT,
@@ -40,6 +40,7 @@ class DataConfig:
     # prompt_template_type: str = "none"
     # add_noise: bool = False  # 是否添加噪声
     # sample_type: str = "uniform"  # 采样类型
+
 
 
 def build_prompt(dimension, code_problem, solution):
