@@ -51,7 +51,7 @@ from transformers.utils import is_peft_available
 from trl import RewardTrainer
 
 from geomloss import SamplesLoss
-from .utils import get_peft_state_non_lora_maybe_zero_3
+from utils import get_peft_state_non_lora_maybe_zero_3
 
 
 # if is_torch_xla_available():

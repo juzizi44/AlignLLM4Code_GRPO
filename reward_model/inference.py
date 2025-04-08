@@ -8,12 +8,12 @@ import pandas as pd
 import torch
 from transformers import AutoTokenizer
 
-from .data import DataConfig
-from .utils import ModelConfig, PEFTLoraConfig, TrainingConfig
-from .utils import load_model_from_checkpoint
-from .train import create_model_and_tokenizer
-from .data import build_prompt
 
+from data import DataConfig
+from utils import ModelConfig, PEFTLoraConfig, TrainingConfig
+from utils import load_model_from_checkpoint
+from train import create_model_and_tokenizer
+from data import build_prompt
 
 def load_configs_from_json(config_path):
     with open(config_path, "r") as f:

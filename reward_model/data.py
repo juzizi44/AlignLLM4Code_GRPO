@@ -12,8 +12,8 @@ import torchvision.transforms.functional as F
 
 # from qwen_vl_utils import process_vision_info
 
-from .prompt_template.action import ACTION_PROMPT
-from .prompt_template.code_quality import (
+from prompt_template.action import ACTION_PROMPT
+from prompt_template.code_quality import (
     COMMENT_PROMPT,
     EFFICIENCY_PROMPT,
     MODULARITY_PROMPT,
@@ -22,6 +22,7 @@ from .prompt_template.code_quality import (
     FUNCTIONALITY_PROMPT,
     STANDARDIZATION_PROMPT
 )
+
 
 @dataclass
 class DataConfig:

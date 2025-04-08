@@ -1,5 +1,5 @@
 # CUDA_VISIBLE_DEVICES=6
-deepspeed --master_port=28500 --include localhost:6,7 train.py \
+deepspeed --master_port=28500 --include localhost:0,1 train.py \
     --lora_enable True \
     --freeze_llm False \
     --lora_r 32 \
