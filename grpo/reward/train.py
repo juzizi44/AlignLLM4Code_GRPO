@@ -1,24 +1,32 @@
 import random
 import json
+import dataclasses
 from dataclasses import dataclass, field, asdict
 import torch
 import os
 import wandb
 import regex as re
+from functools import partial
 
-from transformers import AutoTokenizer
+from transformers import (
+    Trainer, 
+    TrainingArguments, 
+    AutoTokenizer,
+    Qwen2ForCausalLM)
+
 from transformers.hf_argparser import HfArgumentParser
+from transformers import Qwen2VLForConditionalGeneration, Qwen2VLProcessor
 from peft import LoraConfig, get_peft_model
+from pathlib import Path
+from typing import Optional
 from trl import get_kbit_device_map, get_quantization_config
 
+from .data import DataConfig, create_dataset
+from .utils import TrainingConfig, ModelConfig, PEFTLoraConfig, load_model_from_checkpoint
+from .trainer import CodeGenTrainer, PartialEmbeddingUpdateCallback, CodeGenRewardModel
 
-from data import DataConfig, create_dataset
 
-from utils import TrainingConfig, ModelConfig, PEFTLoraConfig, load_model_from_checkpoint
-from trainer import CustomGRPOTrainer
-from transformers import AutoModelForCausalLM
 import ast
-from trl import GRPOConfig
 
 
 def save_configs_to_json(data_config, training_args, model_config, peft_lora_config):
@@ -149,24 +157,15 @@ def create_model_and_tokenizer(
         special_token_ids = tokenizer.convert_tokens_to_ids(special_tokens)
 
     # 加载预训练模型（使用 CodeGenRewardModel 封装），支持 FlashAttention v2
-    # model = CodeGenRewardModel.from_pretrained(
-    #     model_config.model_name_or_path,
-    #     output_dim=model_config.output_dim,  # 输出维度，例如 reward score=1
-    #     reward_token=model_config.reward_token,  # 指定 reward 对应 token --> special
-    #     special_token_ids=special_token_ids,  # 特殊 token ID（如 <|reward|>）
-    #     torch_dtype=torch_dtype,  # 数据精度设置
-    #     attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "sdpa",
-    #     cache_dir=cache_dir,
-    #     local_files_only=False,  # 是否仅从本地加载模型；设为 False 可容忍连接失败
-    #     **model_kwargs
-    # )
-    
-    model = AutoModelForCausalLM.from_pretrained(
+    model = CodeGenRewardModel.from_pretrained(
         model_config.model_name_or_path,
-        torch_dtype=torch_dtype,
-        attn_implementation="flash_attention_2",
+        output_dim=model_config.output_dim,  # 输出维度，例如 reward score=1
+        reward_token=model_config.reward_token,  # 指定 reward 对应 token --> special
+        special_token_ids=special_token_ids,  # 特殊 token ID（如 <|reward|>）
+        torch_dtype=torch_dtype,  # 数据精度设置
+        attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "sdpa",
         cache_dir=cache_dir,
-        local_files_only=False,
+        local_files_only=False,  # 是否仅从本地加载模型；设为 False 可容忍连接失败
         **model_kwargs
     )
 
@@ -229,20 +228,6 @@ def train():
     parser = HfArgumentParser((DataConfig, TrainingConfig, ModelConfig, PEFTLoraConfig))
     data_config, training_args, model_config, peft_lora_config = parser.parse_args_into_dataclasses()
 
-    # 创建 GRPOConfig 实例，使用 training_args 中的 output_dir
-    grpo_args = GRPOConfig(
-        output_dir=training_args.output_dir,
-        learning_rate=training_args.learning_rate,
-        bf16=training_args.bf16,
-        per_device_train_batch_size=training_args.per_device_train_batch_size,
-        gradient_accumulation_steps=training_args.gradient_accumulation_steps,
-        num_train_epochs=training_args.num_train_epochs,
-        gradient_checkpointing=training_args.gradient_checkpointing,
-        max_prompt_length=DataConfig.max_prompt_length,
-        max_completion_length=DataConfig.max_completion_length
-    )
-
-
     # 检查LoRA配置的有效性
     assert not (peft_lora_config.lora_enable and model_config.freeze_llm), \
         'When using LoRA, the LLM should not be frozen. If you want to freeze the LLM, please disable LoRA.'
@@ -284,11 +269,14 @@ def train():
         # 设置LLM参数的梯度
         set_requires_grad(model_to_configure.model.parameters(), not model_config.freeze_llm)
 
-
+    # if not peft_lora_config.vision_lora:
+    #     # 设置视觉编码器和merger的梯度
+    #     set_requires_grad(model_to_configure.visual.parameters(), not model_config.freeze_vision_tower)
+    #     set_requires_grad(model_to_configure.visual.merger.parameters(), model_config.tune_merger)
 
     # 设置回归头的梯度
-
-    # set_requires_grad(model_to_configure.score.parameters(), True)
+    # set_requires_grad(model_to_configure.rm_head.parameters(), True)
+    set_requires_grad(model_to_configure.score.parameters(), True)
 
     ## ===> Step 3: 加载和配置数据集
     train_dataset = create_dataset(data_config)
@@ -312,8 +300,8 @@ def train():
     # 配置数据收集器和训练参数
     num_gpu = int(os.environ.get("WORLD_SIZE", 1))
     
-
-    # data_collator = CodeGenDataCollator(tokenizer)
+    # 这里要改 todo: done
+    data_collator = CodeGenDataCollator(tokenizer)
 
     # 计算训练步数
     actual_batch_size = training_args.per_device_train_batch_size * training_args.gradient_accumulation_steps * num_gpu
@@ -343,21 +331,20 @@ def train():
     
     ## ===> Step 5: 开始训练
     # 配置回调函数
-    # special_token_ids = model.special_token_ids
-    # callbacks = []
-    # if special_token_ids is not None:
-    #     callbacks.append(PartialEmbeddingUpdateCallback(special_token_ids))
-    
-    
+    special_token_ids = model.special_token_ids
+    callbacks = []
+    if special_token_ids is not None:
+        callbacks.append(PartialEmbeddingUpdateCallback(special_token_ids))
+
     # 创建训练器并开始训练
-    trainer = CustomGRPOTrainer(
+    trainer = CodeGenTrainer(
         model=model,
-        reward_api_url="http://localhost:8004",
-        args=grpo_args,
+        data_collator=data_collator,
+        args=training_args,
+        callbacks=callbacks,
         train_dataset=train_dataset,
         eval_dataset=valid_dataset if training_args.conduct_eval else None,
         processing_class=tokenizer,
-        peft_config=peft_config,
     )
 
     trainer.train()

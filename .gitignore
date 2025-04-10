@@ -15,3 +15,5 @@ grpo/wandb
 .vscode
 reward_model/core*
 linshi
+reward_model/output
+grpo/grpo_output

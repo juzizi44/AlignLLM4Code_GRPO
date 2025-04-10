@@ -2,12 +2,11 @@ import os
 import glob
 import logging
 from dataclasses import dataclass, field
-from typing import List, Literal, Optional, Union
+from typing import List, Literal, Optional
 
 import safetensors
 import torch
 from transformers import TrainingArguments
-from trl import GRPOConfig as BaseGRPOConfig
 
 
 @dataclass
@@ -16,7 +15,6 @@ class TrainingConfig(TrainingArguments):
     dataset_num_proc: Optional[int] = None
     center_rewards_coefficient: Optional[float] = None
     disable_flash_attn2: bool = field(default=False)
-    reward_device: Optional[str] = None
 
     vision_lr: Optional[float] = None
     merger_lr: Optional[float] = None
@@ -29,7 +27,6 @@ class TrainingConfig(TrainingArguments):
     eval_epochs: Optional[float] = None
     save_epochs: Optional[float] = None
     remove_unused_columns: Optional[bool] = False
-    reward_model_path: Optional[str] = None
 
     save_full_model: Optional[bool] = False
 
@@ -162,4 +159,3 @@ def load_model_from_checkpoint(
         model.load_state_dict(model_state_dict)
 
     return model, checkpoint_step
-

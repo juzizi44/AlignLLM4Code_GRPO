@@ -1,3 +1,0 @@
-"""
-GRPO package initialization
-""" 
