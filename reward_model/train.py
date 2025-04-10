@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Optional
 from trl import get_kbit_device_map, get_quantization_config
 
-from data import DataConfig, create_dataset
+from data import DataConfig, create_dataset,CodeGenDataCollator
 from utils import TrainingConfig, ModelConfig, PEFTLoraConfig, load_model_from_checkpoint
 from trainer import CodeGenTrainer, PartialEmbeddingUpdateCallback, CodeGenRewardModel
 

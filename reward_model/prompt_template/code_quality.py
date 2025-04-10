@@ -1,7 +1,5 @@
 COMMENT_PROMPT = """
-As a **Code Commenting Reviewer**, your role is to **strictly evaluate** the quality of comments in the code without making modifications or suggestions for rewriting. Your focus is on **assessing** whether comments meet high standards of clarity, completeness, consistency, and appropriateness.  
-
-# Code Commenting Evaluation Criteria (Total Score: 0-3bad)
+# Code Commenting Evaluation Criteria (Total Score: 0-5)
 
 Comments should accurately convey the purpose and logic of the code, ensuring the information is concise, easy to understand, and unambiguous. They should follow a consistent style and standard, aligning with the overall code structure while explaining key parts. Over-commenting or omission should be avoided to ensure appropriate and effective information delivery.
 
@@ -84,10 +82,10 @@ Comments should accurately convey the purpose and logic of the code, ensuring th
 
 # Task
 Your task is to evaluate the quality of code comments in the provided solution using the Code comments Scoring Criteria outlined above. 
-Please provide a rating from 0 to 5 for each of the three categories, with 0 being the worst and 5 being the best.
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
 
 ## Output
-Please provide the score of solution: <|reward|>
+Please provide the score of solution(0-5): <|reward|>
 END
 
 """
@@ -96,8 +94,6 @@ END
 
 
 EFFICIENCY_PROMPT = '''
-As a **Code Efficiency Reviewer**, your role is to **strictly evaluate** the efficiency of code, focusing on performance and resource usage. Your primary responsibility is to assess the code's time complexity and space complexity, ensuring it adheres to best practices for optimization. You evaluate whether the code is optimized for time, memory, and computational power, and ensure that it operates efficiently, even in high-load or high-concurrency environments.
-
 # Efficiency Scoring Criteria 
 
 Code efficiency refers to the ability of the code to accomplish tasks with the least resource consumption (such as time, memory, computational power, etc.) during execution. Efficient code is capable of processing large amounts of data in a short time while ensuring stable operation with limited resources, avoiding unnecessary performance bottlenecks or wastage.
@@ -172,69 +168,19 @@ Code efficiency refers to the ability of the code to accomplish tasks with the l
 - normal: Some unused code, affecting code maintainability and execution efficiency.
 - bad: A large amount of unused code, severely affecting code maintainability and execution efficiency.
 
-# Task
-Your task is to rank the code efficiency of the solution based on the Code efficiency Scoring Criteria above. Use the criteria to score the solution below and provide the final ranking.
 
-## Input format 
-[code problem]
-[solution]
-
-
-## Output format   
-Please strictly follow the JSON format in the example below, and make sure that the brackets are properly balanced and closed.
-{{
-  "solution": {{
-      "algorithm_efficiency": {{
-        "score1": ,
-        "reason": ""
-      }},
-      "algorithm_adaptability": {{
-        "score2": ,
-        "reason": ""
-      }},
-      "redundant_computation": {{
-        "score3": ,
-        "reason": ""
-      }},
-      "loop_optimization": {{
-        "score4": ,
-        "reason": ""
-      }},
-      "data_structure_choice": {{
-        "score5": ,
-        "reason": ""
-      }},
-      "variable_object_management": {{
-        "score6": ,
-        "reason": ""
-      }},
-      "caching_and_reuse": {{
-        "score7": ,
-        "reason": ""
-      }},
-      "parallel_asynchronous_optimization": {{
-        "score8": ,
-        "reason": ""
-      }},
-      "io_database_optimization": {{
-        "score9": ,
-        "reason": ""
-      }},
-      "code_redundancy": {{
-        "score10": ,
-        "reason": ""
-      }},
-    "score1+score2+...+score10":<|reward|> 
-  }},
-}}
-
-# Annotation
 ## Code problem
 {code_problem} 
-## Response
+## solution
 {solution} 
 
-## Output  
+# Task
+Your task is to evaluate the code Efficiency in the provided solution using the Code Efficiency Scoring Criteria outlined above. 
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
+
+## Output
+Please provide the score of solution(0-5): <|reward|>
+END
 '''
 
 
@@ -314,68 +260,18 @@ Code modularity refers to the practice of dividing code into multiple independen
 - normal: Modules are highly dependent on other modules, making it difficult to use or modify them independently.
 - bad: Modules are severely coupled, directly accessing the internal implementation of other modules, and any modification could affect the entire system, resulting in high maintenance costs.
 
-# Task  
-Your task is to rank the code modularity  of the solution based on the Code modularity Scoring Criteria above. Use the criteria to score the solution below and provide the final ranking.
-
-## Input format 
-[code problem]
-[solution] 
-
-## Output format   
-Please strictly follow the JSON format in the example below, and make sure that the brackets are properly balanced and closed.
-{{
-  "solution": {{
-      "single_responsibility_principle": {{
-        "score1": ,
-        "reason": ""
-      }},
-      "module_independence": {{
-        "score2": ,
-        "reason": ""
-      }},
-      "code_organization_structure": {{
-        "score3": ,
-        "reason": ""
-      }},
-      "module_dependency_relationships": {{
-        "score4": ,
-        "reason": ""
-      }},
-      "code_reusability_level": {{
-        "score5": ,
-        "reason": ""
-      }},
-      "common_module_encapsulation": {{
-        "score6": ,
-        "reason": ""
-      }},
-      "redundant_code_elimination": {{
-        "score7": ,
-        "reason": ""
-      }},
-      "interface_clarity": {{
-        "score8": ,
-        "reason": ""
-      }},
-      "high_cohesion": {{
-        "score9": ,
-        "reason": ""
-      }},
-      "low_coupling": {{
-        "score10": ,
-        "reason": ""
-      }},
-    "score1+score2+...+score10":<|reward|>
-  }},
-}}
-
-# Annotation
 ## Code problem
 {code_problem} 
-## Response
+## solution
 {solution} 
 
-## Output  
+# Task
+Your task is to evaluate the code modularity in the provided solution using the Code modularity Scoring Criteria outlined above. 
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
+
+## Output
+Please provide the score of solution(0-5): <|reward|>
+END
 '''
 
 
@@ -454,68 +350,18 @@ Code simplicity refers to implementing requirements with minimal code, efficient
 - normal: Design patterns and best practices are underused, and the code can be further optimized and simplified.
 - bad: No design patterns or best practices are used, resulting in chaotic and hard-to-expand code.
 
-# Task  
-Your task is to rank the code Simplicity  of the solution based on the Code Simplicity Scoring Criteria above. Use the criteria to score the solution below and provide the final ranking.
-
-## Input format 
-[code problem]
-[solution] 
-
-## Output format   
-Please strictly follow the JSON format in the example below, and make sure that the brackets are properly balanced and closed.
-{{
-  "solution": {{
-      "code_depth": {{
-        "score1": ,
-        "reason": ""
-      }},
-      "function_method_length": {{
-        "score2": ,
-        "reason": ""
-      }},
-      "code_duplication": {{
-        "score3": ,
-        "reason": ""
-      }},
-      "ineffective_redundant_code": {{
-        "score4": ,
-        "reason": ""
-      }},
-      "variable_function_naming": {{
-        "score5": ,
-        "reason": ""
-      }},
-      "code_comments": {{
-        "score6": ,
-        "reason": ""
-      }},
-      "control_structure_simplicity": {{
-        "score7": ,
-        "reason": ""
-      }},
-      "code_style_consistency": {{
-        "score8": ,
-        "reason": ""
-      }},
-      "use_of_advanced_language_features": {{
-        "score9": ,
-        "reason": ""
-      }},
-      "design_patterns_best_practices": {{
-        "score10": ,
-        "reason": ""
-      }},
-    "score1+score2+...+score10":<|reward|> 
-  }},
-}}
-
-# Annotation
 ## Code problem
 {code_problem} 
-## Response
+## solution
 {solution} 
 
-## Output  
+# Task
+Your task is to evaluate the code Simplicity in the provided solution using the Code Simplicity Scoring Criteria outlined above. 
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
+
+## Output
+Please provide the score of solution(0-5): <|reward|>
+END
 '''
 
 
@@ -589,141 +435,14 @@ Code robustness refers to the stability and fault tolerance of code when faced w
 {solution} 
 
 # Task
-Your task is to evaluate the quality of code robustness in the provided solution using the Code Robustness Scoring Criteria outlined above. 
-Please provide a rating from 0 to 5 for each of the three categories, with 0 being the worst and 5 being the best.
+Your task is to evaluate the code Robustness in the provided solution using the Code Robustness Scoring Criteria outlined above. 
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
 
 ## Output
-Please provide the score of solution: <|reward|>
+Please provide the score of solution(0-5): <|reward|>
 END
 '''
 
-# ROBUSTNESS_PROMPT = '''
-# # **Robustness Scoring Criteria (Total: 3bad)**  
-# Code robustness refers to the stability and fault tolerance of code when faced with different inputs and system conditions. Good robustness means the code can handle both expected and unexpected scenarios, avoiding crashes or abnormal behavior due to exceptions, edge cases, or special inputs.  
-
-# ### Error Capture and Handling   
-# - **excellent**: Code captures and handles exceptions at critical points, preventing crashes or unexpected results.  
-# - **good**: Most exceptions are captured, but a few may be missed in some cases.  
-# - **normal**: Some exceptions are not captured, leading to system instability or crashes.  
-# - **bad**: No exception handling is implemented, causing the program to crash on errors.  
-
-# ### Exception Information Clarity   
-# - **excellent**: Exception messages are clear, helping developers quickly locate and understand issues.  
-# - **good**: Exception messages are not clear or lack sufficient details, making debugging difficult.  
-# - **normal**: Exception messages are vague or missing, providing no effective debugging clues.  
-# - **bad**: No exception messages are provided, making it impossible to locate errors.  
-
-# ### Exception Rationality   
-# - **excellent**: Exceptions are thrown at appropriate places, and the code reacts reasonably to different error scenarios.  
-# - **good**: Exceptions are not always thrown rationally; some cases may not require exceptions.  
-# - **normal**: Exceptions are thrown irrationally or not used, leading to system instability.  
-# - **bad**: No exception handling is implemented, causing crashes or unpredictable behavior on errors.  
-
-# ### Edge Case Detection   
-# - **excellent**: Code handles all edge cases (e.g., null values, maximum/minimum values) correctly.  
-# - **good**: Most edge cases are handled, but some extreme inputs are not fully considered.  
-# - **normal**: Some edge cases are not handled, potentially causing errors or instability.  
-# - **bad**: Edge cases are not considered, leading to crashes on extreme inputs.  
-
-# ### Special Scenario Handling   
-# - **excellent**: Code fully considers special scenarios (e.g., empty lists, duplicate data, invalid inputs) and handles them appropriately.  
-# - **good**: Most special scenarios are handled, but some cases are overlooked.  
-# - **normal**: Some special scenarios are not handled effectively, potentially causing errors.  
-# - **bad**: Special scenarios are not considered, leading to crashes or abnormal behavior on special inputs.  
-
-# ### Input Validation   
-# - **excellent**: Code validates all inputs to ensure data legality and reasonableness.  
-# - **good**: Some inputs are not validated, potentially allowing invalid data into the system.  
-# - **normal**: Input validation is insufficient, leading to errors from invalid inputs.  
-# - **bad**: No input validation is performed, causing crashes or unpredictable results on invalid inputs.  
-
-# ### Exception Recovery   
-# - **excellent**: Code can recover effectively after exceptions, such as rolling back operations, retrying, or using default values.  
-# - **good**: Some exceptions are recovered, but recovery strategies are incomplete or inconsistent.  
-# - **normal**: No effective recovery mechanism exists after exceptions, leading to instability.  
-# - **bad**: No recovery measures are taken after exceptions, causing program failure or crashes.  
-
-# ### System Fault Tolerance   
-# - **excellent**: The system can continue running when some components fail, ensuring critical functionality remains unaffected.  
-# - **good**: Most failure scenarios are handled, but some faults may cause functionality to become unavailable.  
-# - **normal**: The system has low fault tolerance; failure in one module may affect the entire system.  
-# - **bad**: The system has no fault tolerance; any failure causes a crash.  
-
-# ### Resource Release   
-# - **excellent**: All used resources are properly released (e.g., file handles, database connections).  
-# - **good**: Most resources are released, but some cases may miss resource release.  
-# - **normal**: Resource management is poor, risking resource leaks.  
-# - **bad**: No resource release is performed, leading to resource leaks.  
-
-# ### Memory Management   
-# - **excellent**: Memory management is excellent, with no memory leaks or unnecessary memory usage.  
-# - **good**: Some memory is not released, causing minor memory leaks.  
-# - **normal**: Memory management is poor, leading to memory leaks or overflow issues.  
-# - **bad**: No memory management is performed, causing memory leaks or excessive usage.  
-
-# # Task  
-# Your task is to rank the code Robustness  of the solution based on the Code Robustness Scoring Criteria above and the code problem. Use the criteria to score the solution below and provide the final ranking.
-
-# ## Input format 
-# [code problem]
-# [solution] 
-
-# ## Output format   
-# Please strictly follow the JSON format in the example below, and make sure that the brackets are properly balanced and closed.
-# {{
-#   "solution": {{
-#       "error_capture_handling": {{
-#         "score1": ,
-#         "reason": ""
-#       }},
-#       "exception_message_clarity": {{
-#         "score2": ,
-#         "reason": ""
-#       }},
-#       "reasonableness_of_exceptions": {{
-#         "score3": ,
-#         "reason": ""
-#       }},
-#       "boundary_condition_detection": {{
-#         "score4": ,
-#         "reason": ""
-#       }},
-#       "special_case_handling": {{
-#         "score5": ,
-#         "reason": ""
-#       }},
-#       "input_validation": {{
-#         "score6": ,
-#         "reason": ""
-#       }},
-#       "exception_recovery": {{
-#         "score7": ,
-#         "reason": ""
-#       }},
-#       "system_fault_tolerance": {{
-#         "score8": ,
-#         "reason": ""
-#       }},
-#       "resource_release": {{
-#         "score9": ,
-#         "reason": ""
-#       }},
-#       "memory_management": {{
-#         "score10": ,
-#         "reason": ""
-#       }},
-#     "score1+score2+...+score10":<|reward|> 
-#   }},
-# }}
-
-# # Annotation
-# ## Code problem
-# {code_problem} 
-# ## Response
-# {solution} 
-
-# ## Output  
-# '''
 
 FUNCTIONALITY_PROMPT = '''
 # Functional Suitability Scoring Criteria 
@@ -800,68 +519,18 @@ Code functionality suitability refers to whether the code accurately and complet
 - normal: The code frequently encounters errors or exceptions, severely affecting stability.
 - bad: The code frequently crashes or causes exceptions, making it unstable.
 
-# Task  
-Your task is to rank the code Functionality of the solution based on the Code Functionality Scoring Criteria above and the code problem. Use the criteria to score the solution below and provide the final ranking.
-
-## Input format 
-[code problem]
-[solution] 
-
-## Output format   
-Please strictly follow the JSON format in the example below, and make sure that the brackets are properly balanced and closed.
-{{
-  "solution": {{
-      "coverage_of_functional_modules": {{
-        "score1": ,
-        "reason": ""
-      }},
-      "achievement_of_task_goals": {{
-        "score2": ,
-        "reason": ""
-      }},
-      "consistency_of_functional_logic": {{
-        "score3": ,
-        "reason": ""
-      }},
-      "handling_of_boundary_cases": {{
-        "score4": ,
-        "reason": ""
-      }},
-      "output_accuracy": {{
-        "score5": ,
-        "reason": ""
-      }},
-      "output_completeness": {{
-        "score6": ,
-        "reason": ""
-      }},
-      "output_clarity": {{
-        "score7": ,
-        "reason": ""
-      }},
-      "output_consistency": {{
-        "score8": ,
-        "reason": ""
-      }},
-      "functional_execution_correctness": {{
-        "score9": ,
-        "reason": ""
-      }},
-      "functional_execution_stability": {{
-        "score10": ,
-        "reason": ""
-      }},
-    "score1+score2+...+score10":<|reward|> 
-  }},
-}}
-
-# Annotation
 ## Code problem
 {code_problem} 
-## Response
+## solution
 {solution} 
 
-## Output  
+# Task
+Your task is to evaluate the code Functional Suitability in the provided solution using the Code Functional Suitability Scoring Criteria outlined above. 
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
+
+## Output
+Please provide the score of solution(0-5): <|reward|>
+END
 '''
 
 
@@ -940,66 +609,16 @@ Code standardization refers to writing code that adheres to established standard
 - normal: Comments are unclear or lack explanations of important code sections.
 - bad: Comments are missing or completely inaccurate, making it difficult to understand the code.
 
-# Task  
-Your task is to rank the code Standardization of the solution based on the Code Standardization Scoring Criteria above. Use the criteria to score the solution below and provide the final ranking.
-
-## Input format 
-[code problem]
-[solution]    
-
-## Output format   
-Please strictly follow the JSON format in the example below, and make sure that the brackets are properly balanced and closed.
-{{
-  "solution": {{
-      "variable_naming": {{
-        "score1": ,
-        "reason": ""
-      }},
-      "function_method_naming": {{
-        "score2": ,
-        "reason": ""
-      }},
-      "class_naming": {{
-        "score3": ,
-        "reason": ""
-      }},
-      "indentation_and_formatting": {{
-        "score4": ,
-        "reason": ""
-      }},
-      "code_modularization": {{
-        "score5": ,
-        "reason": ""
-      }},
-      "blank_lines_and_comments": {{
-        "score6": ,
-        "reason": ""
-      }},
-      "exception_handling": {{
-        "score7": ,
-        "reason": ""
-      }},
-      "exception_information": {{
-        "score8": ,
-        "reason": ""
-      }},
-      "comment_format": {{
-        "score9": ,
-        "reason": ""
-      }},
-      "comment_content": {{
-        "score10": ,
-        "reason": ""
-      }},
-    "score1+score2+...+score10":<|reward|> 
-  }},
-}}
-
-# Annotation
 ## Code problem
 {code_problem} 
-## Response
+## solution
 {solution} 
 
-## Output  
+# Task
+Your task is to evaluate the code Standardization in the provided solution using the Code Standardization Scoring Criteria outlined above. 
+Please provide a score from 0 to 5 , with 0 being the worst and 5 being the best.
+
+## Output
+Please provide the score of solution(0-5): <|reward|>
+END
 '''
