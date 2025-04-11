@@ -32,6 +32,7 @@ class TrainingConfig(TrainingArguments):
     reward_model_path: Optional[str] = None
 
     save_full_model: Optional[bool] = False
+    num_generations: Optional[int] = 4
 
 @dataclass
 class PEFTLoraConfig:

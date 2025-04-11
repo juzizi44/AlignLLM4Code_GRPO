@@ -17,3 +17,12 @@ reward_model/core*
 linshi
 reward_model/output
 grpo/grpo_output
+DPO/data
+DPO/longest_common_subsequence
+DPO/core
+DPO/result
+DPO/wandb
+DPO/ref
+DPO/build_website.py
+DPO/supervised_fine_tuning.py
+DPO/temp*

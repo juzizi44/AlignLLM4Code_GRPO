@@ -1,4 +1,4 @@
-deepspeed --master_port=28502 --include localhost:4,5,6,7 train.py \
+deepspeed --master_port=28502 --include localhost:4,5 train.py \
     --lora_enable True \
     --freeze_llm False \
     --lora_r 32 \
@@ -7,17 +7,18 @@ deepspeed --master_port=28502 --include localhost:4,5,6,7 train.py \
     --bf16 True \
     --torch_dtype "bfloat16" \
     --num_lora_modules -1 \
-    --model_name_or_path Qwen/Qwen2.5-Coder-3B-Instruct \
+    --model_name_or_path Qwen/Qwen2.5-Coder-7B-Instruct \
     --meta_data "/data/AlignLLM4Code_GRPO/grpo/human-eval/data/HumanEval.jsonl" \
     --output_dir grpo_output/20250409 \
     --eval_dim "comment" \
     --output_dim 1 \
     --use_special_tokens False \
     --reward_token "special" \
-    --per_device_train_batch_size 4 \
+    --per_device_train_batch_size 2 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 4 \
-    --num_train_epochs 3 \
+    --num_train_epochs 2 \
+    --num_generations 4 \
     --learning_rate 1e-6 \
     --special_token_lr 1e-6 \
     --report_to tensorboard \
@@ -28,7 +29,7 @@ deepspeed --master_port=28502 --include localhost:4,5,6,7 train.py \
     --eval_epochs 0.1 \
     --save_epochs 0.25 \
     --max_length 6144 \
-    --gradient_checkpointing False \
+    --gradient_checkpointing True \
     --deepspeed ds_config/zero0.json \
     --save_only_model True \
     --save_full_model False \

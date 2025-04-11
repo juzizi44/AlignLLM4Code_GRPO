@@ -239,7 +239,9 @@ def train():
         num_train_epochs=training_args.num_train_epochs,
         gradient_checkpointing=training_args.gradient_checkpointing,
         max_prompt_length=DataConfig.max_prompt_length,
-        max_completion_length=DataConfig.max_completion_length
+        max_completion_length=DataConfig.max_completion_length,
+        num_generations=training_args.num_generations,
+
     )
 
 
