@@ -1,0 +1,112 @@
+deepspeed --master_port=28501 --include localhost:0,1 train.py \
+    --lora_enable True \
+    --freeze_llm False \
+    --lora_r 32 \
+    --lora_alpha 128 \
+    --lora_namespan_exclude "['score', 'rm_head', 'embed_tokens']" \
+    --bf16 True \
+    --torch_dtype "bfloat16" \
+    --num_lora_modules -1 \
+    --model_name_or_path Qwen/Qwen2.5-3B-Instruct \
+    --meta_data "/data/AlignLLM4Code_GRPO/reward_model/raw_data/final_data/train/functionality_train.jsonl" \
+    --output_dir output/cosine/1e-5/functionality_04121112_1000_epoch24_2cuda_1e-5 \
+    --eval_dim "functionality" \
+    --output_dim 1 \
+    --use_special_tokens True \
+    --reward_token "special" \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 4 \
+    --gradient_accumulation_steps 4 \
+    --num_train_epochs 24 \
+    --learning_rate 1e-5 \
+    --special_token_lr 1e-5 \
+    --report_to tensorboard \
+    --warmup_ratio 0.05 \
+    --lr_scheduler_type "cosine" \
+    --eval_strategy "steps" \
+    --logging_steps 10 \
+    --eval_epochs 0.1 \
+    --save_epochs 2\
+    --max_length 6144 \
+    --gradient_checkpointing False \
+    --deepspeed ds_config/zero0.json \
+    --save_only_model True \
+    --save_full_model False \
+    --dataloader_num_workers 8 \
+    --weight_decay 0.01
+
+
+deepspeed --master_port=28501 --include localhost:0,1 train.py \
+    --lora_enable True \
+    --freeze_llm False \
+    --lora_r 32 \
+    --lora_alpha 128 \
+    --lora_namespan_exclude "['score', 'rm_head', 'embed_tokens']" \
+    --bf16 True \
+    --torch_dtype "bfloat16" \
+    --num_lora_modules -1 \
+    --model_name_or_path Qwen/Qwen2.5-3B-Instruct \
+    --meta_data "/data/AlignLLM4Code_GRPO/reward_model/raw_data/final_data/train/simplicity_train.jsonl" \
+    --output_dir output/cosine/1e-5/simplicity_04121112_1000_epoch24_2cuda_1e-5 \
+    --eval_dim "simplicity" \
+    --output_dim 1 \
+    --use_special_tokens True \
+    --reward_token "special" \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 4 \
+    --gradient_accumulation_steps 4 \
+    --num_train_epochs 24 \
+    --learning_rate 1e-5 \
+    --special_token_lr 1e-5 \
+    --report_to tensorboard \
+    --warmup_ratio 0.05 \
+    --lr_scheduler_type "cosine" \
+    --eval_strategy "steps" \
+    --logging_steps 10 \
+    --eval_epochs 0.1 \
+    --save_epochs 2\
+    --max_length 6144 \
+    --gradient_checkpointing False \
+    --deepspeed ds_config/zero0.json \
+    --save_only_model True \
+    --save_full_model False \
+    --dataloader_num_workers 8 \
+    --weight_decay 0.01
+
+
+deepspeed --master_port=28501 --include localhost:0,1 train.py \
+    --lora_enable True \
+    --freeze_llm False \
+    --lora_r 32 \
+    --lora_alpha 128 \
+    --lora_namespan_exclude "['score', 'rm_head', 'embed_tokens']" \
+    --bf16 True \
+    --torch_dtype "bfloat16" \
+    --num_lora_modules -1 \
+    --model_name_or_path Qwen/Qwen2.5-3B-Instruct \
+    --meta_data "/data/AlignLLM4Code_GRPO/reward_model/raw_data/final_data/train/standardization_train.jsonl" \
+    --output_dir output/cosine/1e-5/standardization_04121112_1000_epoch24_2cuda_1e-5 \
+    --eval_dim "standardization" \
+    --output_dim 1 \
+    --use_special_tokens True \
+    --reward_token "special" \
+    --per_device_train_batch_size 1 \
+    --per_device_eval_batch_size 4 \
+    --gradient_accumulation_steps 4 \
+    --num_train_epochs 24 \
+    --learning_rate 1e-5 \
+    --special_token_lr 1e-5 \
+    --report_to tensorboard \
+    --warmup_ratio 0.05 \
+    --lr_scheduler_type "cosine" \
+    --eval_strategy "steps" \
+    --logging_steps 10 \
+    --eval_epochs 0.1 \
+    --save_epochs 2\
+    --max_length 6144 \
+    --gradient_checkpointing False \
+    --deepspeed ds_config/zero0.json \
+    --save_only_model True \
+    --save_full_model False \
+    --dataloader_num_workers 8 \
+    --weight_decay 0.01

@@ -11,7 +11,7 @@ from trl import GRPOConfig as BaseGRPOConfig
 
 
 @dataclass
-class TrainingConfig(TrainingArguments):
+class TrainingConfig(TrainingArguments): # ZNX: 把父类改成GRPOConfig
     max_length: Optional[int] = None
     dataset_num_proc: Optional[int] = None
     center_rewards_coefficient: Optional[float] = None

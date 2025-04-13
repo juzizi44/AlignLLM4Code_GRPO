@@ -79,7 +79,7 @@
 ```
 . /data/AlignLLM4Code_GRPO/grpo/start_services.sh
 ```
-（我放在了screen:`1037977.reward_service` ）
+（我放在了screen:`reward_service` ）
 
 测试命令
 ```
@@ -91,8 +91,3 @@ curl -X POST http://localhost:8004/reward \
 2. 然后运行`. train.sh`,开始跑grpo。
 
 
-目前报错：
-```
-[rank1]: torch.OutOfMemoryError: CUDA out of memory. Tried to allocate 886.00 MiB. GPU 1 has a total capacity of 47.41 GiB of which 319.44 MiB is free. Process 3747386 has 47.09 GiB memory in use. Of the allocated memory 45.56 GiB is allocated by PyTorch, and 972.90 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)
-
-```

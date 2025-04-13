@@ -62,10 +62,11 @@ class CustomGRPOTrainer(GRPOTrainer):
         if not prompt:
             raise ValueError("Prompt cannot be empty")
 
-        # 同步封装异步调用，直接使用单个prompt而不是列表
+       
         rewards = asyncio.run(
             self._async_fetch_rewards(prompt, completions)
         )
+        # rewards = [1.0] * len(completions)
         return rewards
    
 

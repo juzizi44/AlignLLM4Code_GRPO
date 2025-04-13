@@ -12,15 +12,15 @@ import torchvision.transforms.functional as F
 
 # from qwen_vl_utils import process_vision_info
 
-# from .prompt_template.code_quality import (
-#     COMMENT_PROMPT,
-#     EFFICIENCY_PROMPT,
-#     MODULARITY_PROMPT,
-#     SIMPLICITY_PROMPT,
-#     ROBUSTNESS_PROMPT,
-#     FUNCTIONALITY_PROMPT,
-#     STANDARDIZATION_PROMPT
-# )
+from prompt_template.code_quality import (
+    COMMENT_PROMPT,
+    EFFICIENCY_PROMPT,
+    MODULARITY_PROMPT,
+    SIMPLICITY_PROMPT,
+    ROBUSTNESS_PROMPT,
+    FUNCTIONALITY_PROMPT,
+    STANDARDIZATION_PROMPT
+)
 
 @dataclass
 class DataConfig:
@@ -43,53 +43,32 @@ class DataConfig:
     max_completion_length: int = 6000  # 补全文本的最大长度
 
 
-# def build_prompt(dimension, code_problem, solution):
-#     if dimension == 'comment':
-#         return COMMENT_PROMPT.format(code_problem=code_problem, solution=solution)
-#     elif dimension == 'efficiency':
-#         return EFFICIENCY_PROMPT.format(code_problem=code_problem, solution=solution)
-#     elif dimension == 'modularity':
-#         return MODULARITY_PROMPT.format(code_problem=code_problem, solution=solution)
-#     elif dimension == 'simplicity':
-#         return SIMPLICITY_PROMPT.format(code_problem=code_problem, solution=solution)
-#     elif dimension == 'robustness':
-#         return ROBUSTNESS_PROMPT.format(code_problem=code_problem, solution=solution)
-#     elif dimension == 'functionality':
-#         return FUNCTIONALITY_PROMPT.format(code_problem=code_problem, solution=solution)
-#     elif dimension == 'standardization':
-#         return STANDARDIZATION_PROMPT.format(code_problem=code_problem, solution=solution)
-#     else:
-#         raise ValueError(f"Invalid template type {dimension}")
+def build_prompt(dimension, code_problem):
+    if dimension == 'comment':
+        return COMMENT_PROMPT.format(prompt=code_problem)
+    elif dimension == 'efficiency':
+        return EFFICIENCY_PROMPT.format(prompt=code_problem)
+    elif dimension == 'modularity':
+        return MODULARITY_PROMPT.format(prompt=code_problem)
+    elif dimension == 'simplicity':
+        return SIMPLICITY_PROMPT.format(prompt=code_problem)
+    elif dimension == 'robustness':
+        return ROBUSTNESS_PROMPT.format(prompt=code_problem)
+    elif dimension == 'functionality':
+        return FUNCTIONALITY_PROMPT.format(prompt=code_problem)
+    elif dimension == 'standardization':
+        return STANDARDIZATION_PROMPT.format(prompt=code_problem)
+    else:
+        raise ValueError(f"Invalid template type {dimension}")
 
 
-# def convert_anno_csv_to_reward_data(
-#         example, eval_dims='comment', 
-# ):
-#     """
-#     将JSON标注数据转换为奖励学习所需的数据格式
-    
-#     参数:
-#         example: 包含GSB(Good/Same/Bad)数据的字典
-#         data_dir: 视频文件目录路径
-#         eval_dims: 评估维度（"action"/"color"等）
-#         max_pixels: 视频最大像素数
-#         num_frames: 处理的帧数
-#         sample_type: 采样类型
-#     """
-
-#     data = [
-#         {
-#             "role": "user",
-#             "content": build_prompt(eval_dims, example['code-instruction'])
-#         }
-#     ]
-
-#     score = torch.tensor(example['final_score'], dtype=torch.float)
-#     score = torch.clamp((score - 20)/2., 0., 5.)
-    
-
-#     return {'data': data, 'label': score}
-
+def convert_anno_csv_to_grpo_data(
+        example, eval_dims='comment', 
+):
+    # 只返回处理后的prompt
+    return {
+        'prompt': build_prompt(eval_dims, example['prompt'])
+    }
 
 
 def create_dataset(data_config: DataConfig, meta_file=None):
@@ -98,13 +77,16 @@ def create_dataset(data_config: DataConfig, meta_file=None):
         meta_file = data_config.meta_data
     dataset = load_dataset('json', data_files=meta_file)
 
-    # convert_func = lambda example : convert_anno_csv_to_reward_data(
-    #     example, data_config.eval_dim
-    # )
+    convert_func = lambda example : convert_anno_csv_to_grpo_data(
+        example, data_config.eval_dim
+    )
 
-    # dataset = dataset.map(convert_func, remove_columns=dataset['train'].column_names, load_from_cache_file=False)
+    # 只更新prompt列，保留其他列
+    dataset = dataset.map(convert_func, load_from_cache_file=False)
+    print("="*50)
     dataset = dataset['train']
-
+    print(dataset)
+    print("="*50)
     return dataset
 
 

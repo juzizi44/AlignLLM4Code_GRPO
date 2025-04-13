@@ -26,6 +26,18 @@ parser.add_argument("--model_name_or_path", type=str, default="Qwen/Qwen2.5-Code
 parser.add_argument("--test_size", type=float, default=0.2, help="测试集比例")
 parser.add_argument("--seed", type=int, default=42, help="随机种子")
 parser.add_argument("--data_file", type=str, default="/data/AlignLLM4Code_GRPO/DPO/data/train/comment_train.jsonl", help="数据文件路径")
+parser.add_argument("--output_dir", type=str, default="./result/dpo_output", help="输出目录路径")
+parser.add_argument("--per_device_train_batch_size", type=int, default=1, help="训练时每个GPU的batch大小")
+parser.add_argument("--per_device_eval_batch_size", type=int, default=2, help="评估时每个GPU的batch大小")
+parser.add_argument("--num_train_epochs", type=int, default=12, help="训练轮数")
+parser.add_argument("--gradient_accumulation_steps", type=int, default=4, help="梯度累积步数")
+parser.add_argument("--eval_strategy", type=str, default="steps", help="评估策略")
+parser.add_argument("--logging_steps", type=int, default=10, help="日志记录间隔步数")
+parser.add_argument("--eval_steps", type=int, default=10, help="评估间隔步数")
+parser.add_argument("--weight_decay", type=float, default=0.001, help="权重衰减")
+parser.add_argument("--gradient_checkpointing", type=bool, default=False, help="是否启用梯度检查点")
+parser.add_argument("--learning_rate", type=float, default=5e-5, help="学习率")
+parser.add_argument("--lr_scheduler_type", type=str, default="cosine", help="学习率调度器类型")
 args = parser.parse_args()
 
 # 应用chat template的函数
@@ -48,7 +60,7 @@ def apply_chat_template(example, tokenizer):
 
 if __name__=="__main__":
     # 设置分布式训练环境
-    torch.cuda.set_device(0)  # 设置主GPU
+    # torch.cuda.set_device(0)  # 设置主GPU
     
     # 初始化tokenizer
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, trust_remote_code=True)
@@ -85,25 +97,16 @@ if __name__=="__main__":
             {"text_prompt": "prompt", "text_chosen": "chosen", "text_rejected": "rejected"}
         )
     
-    # 记录一些随机样本
-    # for index in random.sample(range(len(raw_datasets["train"])), 3):
-    #     logger.info(f"Prompt sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['prompt']}")
-    #     logger.info(f"Chosen sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['chosen']}")
-    #     logger.info(f"Rejected sample {index} of the raw training set:\n\n{raw_datasets['train'][index]['rejected']}")
-    
     # 限制数据集大小为训练集10条，测试集2条
     dpo_train = raw_datasets["train"]
     dpo_test = raw_datasets["test"]
-    # dpo_train = raw_datasets["train"].select(range(10))
-    # dpo_test = raw_datasets["test"].select(range(2))
     
     # 加载模型
     instruct_model = AutoModelForCausalLM.from_pretrained(
         args.model_name_or_path,
         torch_dtype=torch.float16
-        # device_map="auto",  # 自动处理模型在多GPU上的分配
     )
-
+    
     # 使用lora微调
     lora_config=LoraConfig(
         peft_type=TaskType.CAUSAL_LM,
@@ -112,25 +115,29 @@ if __name__=="__main__":
         lora_dropout=0.1,
         target_modules=['q_proj','v_proj']
     )  # lora参数
-
+    
     dpo_lora_model=get_peft_model(instruct_model,lora_config) # lora模型
-
+    
     # 训练参数
     training_args = DPOConfig(
-        output_dir="./result/20250410_Qwen2.5-Coder-7B-Instruct-DPO_comment_1000_epoch12",
-        per_device_train_batch_size=1, # 训练时每个GPU加载的batch大小
-        per_device_eval_batch_size=2, # 评价时每个GPU加载的batch大小
-        gradient_accumulation_steps=4,  # 梯度更新的间隔步数
-        eval_strategy='steps', # 评估的策略
-        logging_steps=10, # 记录日志的间隔
-        eval_steps=10, # 评估的间隔
-        weight_decay=0.001, # 权重衰减
-        # ddp_find_unused_parameters=False,  # 分布式训练参数
-        ddp_backend="nccl",  # 使用NCCL后端，支持NVLink
-        gradient_checkpointing=False,  # 启用梯度检查点以节省显存
-        num_train_epochs=3,
+        output_dir=args.output_dir,
+        per_device_train_batch_size=args.per_device_train_batch_size,
+        per_device_eval_batch_size=args.per_device_eval_batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        eval_strategy=args.eval_strategy,
+        logging_steps=args.logging_steps,
+        eval_steps=args.eval_steps,
+        weight_decay=args.weight_decay,
+        ddp_backend="nccl",
+        gradient_checkpointing=args.gradient_checkpointing,
+        num_train_epochs=args.num_train_epochs,
+        learning_rate=args.learning_rate,
+        lr_scheduler_type=args.lr_scheduler_type,
+        local_rank=int(os.environ.get("LOCAL_RANK", -1)),
+        deepspeed=None,
+        ddp_find_unused_parameters=False
     )
-
+    
     # 加载训练器
     trainer = DPOTrainer(
         model=dpo_lora_model,
@@ -139,7 +146,7 @@ if __name__=="__main__":
         eval_dataset=dpo_test,
         processing_class=tokenizer
     )
-
+    
     # 训练
     trainer.train()
 

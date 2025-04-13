@@ -5,6 +5,7 @@ import torch
 import os
 import wandb
 import regex as re
+import time
 
 from transformers import AutoTokenizer
 from transformers.hf_argparser import HfArgumentParser
@@ -19,7 +20,6 @@ from trainer import CustomGRPOTrainer
 from transformers import AutoModelForCausalLM
 import ast
 from trl import GRPOConfig
-
 
 def save_configs_to_json(data_config, training_args, model_config, peft_lora_config):
     """
@@ -238,8 +238,8 @@ def train():
         gradient_accumulation_steps=training_args.gradient_accumulation_steps,
         num_train_epochs=training_args.num_train_epochs,
         gradient_checkpointing=training_args.gradient_checkpointing,
-        max_prompt_length=DataConfig.max_prompt_length,
-        max_completion_length=DataConfig.max_completion_length,
+        max_prompt_length=data_config.max_prompt_length,
+        max_completion_length=data_config.max_completion_length,
         num_generations=training_args.num_generations,
 
     )
@@ -362,13 +362,17 @@ def train():
         peft_config=peft_config,
     )
 
+
     trainer.train()
+ 
     
     # 保存最终模型
     if training_args.local_rank == -1 or training_args.local_rank == 0:
         model_state_dict = model.state_dict()
         torch.save(model_state_dict, os.path.join(training_args.output_dir, 'final_model.pth'))
         model.config.save_pretrained(training_args.output_dir)
+
+
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-reward_model/longest_common_subsequence_data/
-reward_model/raw_data/
+# reward_model/longest_common_subsequence_data/
+# reward_model/raw_data/
 venv
 reward_model/temp*
 reward_model/rm_output

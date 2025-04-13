@@ -22,9 +22,11 @@ class RewardModel:
             device=device,
             dtype=torch.bfloat16
         )
+
     
     def get_rewards(self, prompts, completions, batch_size=1):
         try:
+            print(f"Model training mode: {self.model.model.training}")
             rewards = []
             for i in range(0, len(prompts), batch_size):
                 sub_prompts = prompts[i:i + batch_size]
