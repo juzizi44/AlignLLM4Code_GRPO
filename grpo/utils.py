@@ -7,11 +7,12 @@ from typing import List, Literal, Optional, Union
 import safetensors
 import torch
 from transformers import TrainingArguments
-from trl import GRPOConfig as BaseGRPOConfig
+from trl import GRPOConfig
+# from trl import GRPOConfig as BaseGRPOConfig
 
 
 @dataclass
-class TrainingConfig(TrainingArguments): # ZNX: 把父类改成GRPOConfig
+class TrainingConfig(GRPOConfig):
     max_length: Optional[int] = None
     dataset_num_proc: Optional[int] = None
     center_rewards_coefficient: Optional[float] = None

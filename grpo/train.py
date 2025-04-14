@@ -45,18 +45,7 @@ def save_configs_to_json(data_config, training_args, model_config, peft_lora_con
 
 
 def find_target_linear_names(model, num_lora_modules=-1, lora_namespan_exclude=[], verbose=False):
-    """
-    查找模型中可用于 LoRA 微调的线性或嵌入层模块名称。
 
-    参数:
-        model: 模型对象，通常是一个继承自 nn.Module 的预训练模型。
-        num_lora_modules: 限制返回的 LoRA 模块数量（默认 -1 表示不过滤，返回全部）。
-        lora_namespan_exclude: 排除的模块名关键字列表，若模块名包含这些子串，将被跳过。
-        verbose: 是否打印匹配到的模块名信息。
-
-    返回:
-        lora_module_names: 一个字符串列表，表示适合使用 LoRA 的模块名。
-    """
     
     # 定义我们关注的模块类型：线性层 和 嵌入层
     linear_cls = torch.nn.Linear
@@ -103,20 +92,7 @@ def create_model_and_tokenizer(
         model_config, peft_lora_config, training_args,
         cache_dir=None,
     ):
-    """
-    创建模型和 tokenizer，并根据配置决定是否添加 LoRA。
-    
-    参数:
-        model_config: 模型结构相关配置（如模型路径、是否使用特殊 token 等）
-        peft_lora_config: LoRA 微调相关配置
-        training_args: 训练运行参数（如是否启用 fp16、bf16、是否启用 FlashAttention 等）
-        cache_dir: 缓存路径，Huggingface 用来缓存模型和 tokenizer
-    
-    返回:
-        model: 构建好的模型（可能包含 LoRA）
-        tokenizer: 处理文本的分词器
-        peft_config: 若启用 LoRA，则返回其配置；否则为 None
-    """
+
 
     # 获取模型使用的数据类型（如 float32, float16, bfloat16）
     torch_dtype = (
@@ -148,18 +124,6 @@ def create_model_and_tokenizer(
         tokenizer.add_special_tokens({"additional_special_tokens": special_tokens})
         special_token_ids = tokenizer.convert_tokens_to_ids(special_tokens)
 
-    # 加载预训练模型（使用 CodeGenRewardModel 封装），支持 FlashAttention v2
-    # model = CodeGenRewardModel.from_pretrained(
-    #     model_config.model_name_or_path,
-    #     output_dim=model_config.output_dim,  # 输出维度，例如 reward score=1
-    #     reward_token=model_config.reward_token,  # 指定 reward 对应 token --> special
-    #     special_token_ids=special_token_ids,  # 特殊 token ID（如 <|reward|>）
-    #     torch_dtype=torch_dtype,  # 数据精度设置
-    #     attn_implementation="flash_attention_2" if not training_args.disable_flash_attn2 else "sdpa",
-    #     cache_dir=cache_dir,
-    #     local_files_only=False,  # 是否仅从本地加载模型；设为 False 可容忍连接失败
-    #     **model_kwargs
-    # )
     
     model = AutoModelForCausalLM.from_pretrained(
         model_config.model_name_or_path,
@@ -216,49 +180,14 @@ def create_model_and_tokenizer(
 
 
 def train():
-    """
-    主训练函数
-    主要步骤：
-    1. 解析命令行参数
-    2. 加载和配置模型
-    3. 准备数据集
-    4. 配置训练参数
-    5. 执行训练
-    """
+
     ## ====> 1: 解析参数
     parser = HfArgumentParser((DataConfig, TrainingConfig, ModelConfig, PEFTLoraConfig))
     data_config, training_args, model_config, peft_lora_config = parser.parse_args_into_dataclasses()
 
-    # 创建 GRPOConfig 实例，使用 training_args 中的 output_dir
-    grpo_args = GRPOConfig(
-        output_dir=training_args.output_dir,
-        learning_rate=training_args.learning_rate,
-        bf16=training_args.bf16,
-        per_device_train_batch_size=training_args.per_device_train_batch_size,
-        gradient_accumulation_steps=training_args.gradient_accumulation_steps,
-        num_train_epochs=training_args.num_train_epochs,
-        gradient_checkpointing=training_args.gradient_checkpointing,
-        max_prompt_length=data_config.max_prompt_length,
-        max_completion_length=data_config.max_completion_length,
-        num_generations=training_args.num_generations,
-
-    )
-
-
     # 检查LoRA配置的有效性
     assert not (peft_lora_config.lora_enable and model_config.freeze_llm), \
         'When using LoRA, the LLM should not be frozen. If you want to freeze the LLM, please disable LoRA.'
-
-    # if not peft_lora_config.lora_enable:
-    #     assert not peft_lora_config.vision_lora, \
-    #         "Error: model_config.lora_enable is not enabled, but model_config.vision_lora is enabled."
-    # else:
-    #     if peft_lora_config.lora_namespan_exclude is not None:
-    #         peft_lora_config.lora_namespan_exclude = ast.literal_eval(peft_lora_config.lora_namespan_exclude)
-    #     else:
-    #         peft_lora_config.lora_namespan_exclude = []
-    #     # if not peft_lora_config.vision_lora:
-    #     #     peft_lora_config.lora_namespan_exclude += ["visual"]
 
     if peft_lora_config.lora_enable: # 确保 lora_namespan_exclude 是个列表对象（list），即使它是从字符串读取来的配置值。
         if peft_lora_config.lora_namespan_exclude is not None:
@@ -354,8 +283,8 @@ def train():
     # 创建训练器并开始训练
     trainer = CustomGRPOTrainer(
         model=model,
-        reward_api_url="http://localhost:8004",
-        args=grpo_args,
+        base_reward_url="http://localhost",  # 修改为基础URL，各个reward服务会自动加上对应的端口号
+        args=training_args,
         train_dataset=train_dataset,
         eval_dataset=valid_dataset if training_args.conduct_eval else None,
         processing_class=tokenizer,
@@ -372,7 +301,10 @@ def train():
         torch.save(model_state_dict, os.path.join(training_args.output_dir, 'final_model.pth'))
         model.config.save_pretrained(training_args.output_dir)
 
-
+    # 清理分布式训练资源
+    if torch.distributed.is_initialized():
+        torch.distributed.barrier()  # 确保所有进程都完成了工作
+        torch.distributed.destroy_process_group()
 
 
 if __name__ == "__main__":

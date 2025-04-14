@@ -91,3 +91,6 @@ curl -X POST http://localhost:8004/reward \
 2. 然后运行`. train.sh`,开始跑grpo。
 
 
+注意使用conda环境和：
+pip install flash-attn==2.5.8 --no-build-isolation
+

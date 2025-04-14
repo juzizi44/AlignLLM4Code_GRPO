@@ -39,8 +39,8 @@ class DataConfig:
     # prompt_template_type: str = "none"
     # add_noise: bool = False  # 是否添加噪声
     # sample_type: str = "uniform"  # 采样类型
-    max_prompt_length: int = 6000  # 提示文本的最大长度
-    max_completion_length: int = 6000  # 补全文本的最大长度
+    # max_prompt_length: int = 6000  # 提示文本的最大长度
+    # max_completion_length: int = 6000  # 补全文本的最大长度
 
 
 def build_prompt(dimension, code_problem):
@@ -82,7 +82,7 @@ def create_dataset(data_config: DataConfig, meta_file=None):
     )
 
     # 只更新prompt列，保留其他列
-    dataset = dataset.map(convert_func, load_from_cache_file=False)
+    # dataset = dataset.map(convert_func, load_from_cache_file=False)
     print("="*50)
     dataset = dataset['train']
     print(dataset)

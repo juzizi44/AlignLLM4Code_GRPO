@@ -35,17 +35,25 @@ class CustomGRPOTrainer(GRPOTrainer):
     def __init__(
         self,
         model,
-        reward_api_url: str,  # 新增参数：Reward Server 地址
+        base_reward_url: str,  # 修改为基础URL
         **kwargs
     ):
-        self.reward_api_url = reward_api_url
+        self.reward_urls = {
+            'comment': f"{base_reward_url}:8003/reward",
+            'efficiency': f"{base_reward_url}:8004/reward",
+            'functionality': f"{base_reward_url}:8005/reward",
+            'modularity': f"{base_reward_url}:8006/reward",
+            'robustness': f"{base_reward_url}:8007/reward",
+            'simplicity': f"{base_reward_url}:8008/reward",
+            'standardization': f"{base_reward_url}:8009/reward"
+        }
         kwargs['reward_funcs'] = [self.reward_func]
         super().__init__(model=model, **kwargs)
 
-    async def _async_fetch_rewards(self, prompt: str, completions: List[str]) -> List[float]:
+    async def _async_fetch_reward(self, url: str, prompt: str, completions: List[str]) -> List[float]:
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                f"{self.reward_api_url}/reward",
+                url,
                 json={"prompts": prompt, "completions": completions}
             ) as resp:
                 if resp.status != 200:
@@ -53,6 +61,26 @@ class CustomGRPOTrainer(GRPOTrainer):
                     raise RuntimeError(f"Reward API error: {resp.status} - {text}")
                 result = await resp.json()
                 return result["rewards"]
+
+    async def _async_fetch_all_rewards(self, prompt: str, completions: List[str]) -> List[float]:
+        tasks = []
+        for url in self.reward_urls.values():
+            tasks.append(self._async_fetch_reward(url, prompt, completions))
+        
+        all_rewards = await asyncio.gather(*tasks)
+        # 计算每个completion的平均reward
+        num_completions = len(completions)
+        avg_rewards = [0.0] * num_completions
+        
+        for rewards in all_rewards:
+            for i in range(num_completions):
+                avg_rewards[i] += rewards[i]
+        
+        # 除以维度数得到平均值
+        num_dimensions = len(self.reward_urls)
+        avg_rewards = [r / num_dimensions for r in avg_rewards]
+        
+        return avg_rewards
 
     def reward_func(self, completions, **kwargs):
         if not completions:
@@ -62,11 +90,9 @@ class CustomGRPOTrainer(GRPOTrainer):
         if not prompt:
             raise ValueError("Prompt cannot be empty")
 
-       
         rewards = asyncio.run(
-            self._async_fetch_rewards(prompt, completions)
+            self._async_fetch_all_rewards(prompt, completions)
         )
-        # rewards = [1.0] * len(completions)
         return rewards
    
 

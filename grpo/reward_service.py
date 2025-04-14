@@ -22,20 +22,22 @@ class RewardModel:
             device=device,
             dtype=torch.bfloat16
         )
+        self.model.model.eval()  # 确保模型处于评估模式
 
-    
     def get_rewards(self, prompts, completions, batch_size=1):
         try:
-            print(f"Model training mode: {self.model.model.training}")
             rewards = []
             for i in range(0, len(prompts), batch_size):
-                sub_prompts = prompts[i:i + batch_size]
-                sub_completions = completions[i:i + batch_size]
-                result = self.model.reward(
-                    code_instructions=sub_prompts,
-                    answers=sub_completions
-                )
-                rewards.extend([r["reward"] for r in result])
+                with torch.no_grad():  # 禁用梯度计算
+                    sub_prompts = prompts[i:i + batch_size]
+                    sub_completions = completions[i:i + batch_size]
+                    result = self.model.reward(
+                        code_instructions=sub_prompts,
+                        answers=sub_completions
+                    )
+                    rewards.extend([r["reward"] for r in result])
+                    # 清理显存
+                    torch.cuda.empty_cache()
             return rewards
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))

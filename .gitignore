@@ -26,3 +26,6 @@ DPO/ref
 DPO/build_website.py
 DPO/supervised_fine_tuning.py
 DPO/temp*
+reward_model/final_reward_model
+grpo/output_model
+reward_model/final_reward_model.tar.gz
