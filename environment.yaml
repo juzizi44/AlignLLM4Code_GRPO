@@ -157,3 +157,5 @@ dependencies:
       - diffusers
       - pandas
       - opencv-python-headless
+      - trl==0.16.1
+
