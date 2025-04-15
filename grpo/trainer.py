@@ -131,10 +131,12 @@ class CustomGRPOTrainer(GRPOTrainer):
 
             # 保存优化器和调度器状态
 
+
             # if not self.args.save_only_model:
             self._save_optimizer_and_scheduler(output_dir)
             # self._save_rng_state(output_dir)
            
+
             # 保存trainer状态
             self.state.save_to_json(os.path.join(output_dir, "trainer_state.json"))
 
