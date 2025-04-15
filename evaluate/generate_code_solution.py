@@ -57,7 +57,7 @@ class CodeGenerator:
                 **inputs,
                 max_new_tokens=max_new_tokens,
                 do_sample=True,
-                temperature=0.3,
+                temperature=0.8,
                 top_p=0.85,
                 top_k=40,
                 num_beams=1,
@@ -98,13 +98,13 @@ class CodeGenerator:
 def main():
     # 模型配置
     base_model_path = "Qwen/Qwen2.5-Coder-7B-Instruct"
-    adapter_path = "/data/AlignLLM4Code_GRPO/DPO/result/20250410_Qwen2.5-Coder-7B-Instruct-DPO_comment_1000_epoch12/checkpoint-600"
-    input_file = "/data/AlignLLM4Code_GRPO/grpo/data/75k/correct_data/grpo_test_data.jsonl"
-    output_file = "model_comparison_results.jsonl"
+    adapter_path = "/data/AlignLLM4Code_GRPO/grpo/output_model/20250414/checkpoint-117"
+    input_file = "/data/AlignLLM4Code_GRPO/grpo/data/testdata.jsonl"
+    output_file = "generated_solution/model_comparison_results.jsonl"
     
     # 初始化生成器
     print("正在初始化模型...")
-    generator = CodeGenerator(base_model_path, device="cuda:6")
+    generator = CodeGenerator(base_model_path, device="cuda:4")
     
     results = []
     # 读取输入文件

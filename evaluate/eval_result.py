@@ -19,7 +19,7 @@ load_dotenv()
 def parse_arguments():
     parser = argparse.ArgumentParser(description='Generate code solutions using OpenAI API')
     parser.add_argument('--preference', required=True, choices=['comment', 'efficiency', 'modularity', 'simplicity', 'robustness', 'functionality', 'standardization'])
-    parser.add_argument('--base_dataset', required=True, choices=['75k', '110k'])
+    # parser.add_argument('--base_dataset', required=True, choices=['75k', '110k'])
     parser.add_argument('--max_index', type=int, default=5)
     parser.add_argument('--api_key', required=True, help='API key for OpenAI')
     parser.add_argument('--use_ai_test', action='store_true', help='是否使用AI生成的测试用例')
@@ -117,7 +117,7 @@ def generate_parallel_solutions(user_prompt, clients):
     return results
 
 
-def process_results(user_prompt, index1, lang, clients, solution_to_model,preference):
+def process_results(user_prompt, index1, clients, solution_to_model,preference):
 
 
     result = generate_parallel_solutions(user_prompt, clients)  # 生成不同模型的答案
@@ -148,7 +148,7 @@ def process_results(user_prompt, index1, lang, clients, solution_to_model,prefer
     result_json = {
         "index": index1,
         "preference":preference,
-        "programming_language": lang,
+        # "programming_language": lang,
         "evaluation": restored_scores,
         "responses": {model_name: result[model_name] for model_name in clients.keys()},
     }
@@ -195,7 +195,7 @@ def main():
     for name, client in clients.items():
         client.system_prompt = system_prompt_for_eval.SYSTEM_PROMPTS.get_agent(f"{args.preference}")
 
-    input_file = f"/home/fsq/AlignLLM4Code/evaluate/eval_data/raw_data/{args.base_dataset}/data.jsonl"
+    input_file = f"/data/AlignLLM4Code_GRPO/evaluate/generated_solution/model_comparison_results.jsonl"
     if args.use_ai_test and (args.preference == "robustness" or args.preference == "functionality"):
         ai_test_file = f"/home/fsq/AlignLLM4Code/evaluate/eval_data/result/{args.base_dataset}/ai_test_cases/test_cases_{args.base_dataset}_{args.preference}_{args.start_index}_{args.end_index}.jsonl"
         # 添加文件检查和错误处理
@@ -217,7 +217,7 @@ def main():
             print(f"Unexpected error while reading AI test file: {e}")
             exit(1)
         
-    output_file = f"/home/fsq/AlignLLM4Code/evaluate/eval_data/result/{args.base_dataset}/{args.preference}_score_result.jsonl" 
+    output_file = f"/data/AlignLLM4Code_GRPO/evaluate/generated_solution/{args.preference}_score_result.jsonl" 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     # 获取上次处理的最后索引
@@ -237,11 +237,13 @@ def main():
     with open(output_file, "a", encoding="utf-8", buffering=1) as f:
         for index, row in df_unprocessed.iterrows():
             index1 = row["index"]
-            instruction = row["code_instruction"]
-            lang = row['programming_language']
-            answers = row['results']
+            instruction = row["prompt"]
+            # lang = row['programming_language']
+            answer1 = row["answer1"]
+            answer2 = row["answer2"]
+            answers = row
             print("=" * 50)
-            print(f"Processing index: {index1}, Language: {lang}")
+            print(f"Processing index: {index1}")
             if args.use_ai_test and (args.preference == "robustness" or args.preference == "functionality"):
                 ai_test = df_ai_test.loc[index, "test_cases"]
                 prompt = user_prompt_for_eval.USER_PROMPTS.get_prompt(f"{args.preference}_ai_test") # todo
@@ -252,8 +254,8 @@ def main():
             
             # 创建带索引的映射
             solution_keys = [
-                "untrained_model_output",
-                "fine_tuned_output"
+                "answer1",
+                "answer2"
             ]
 
             # 复制原始映射
@@ -292,7 +294,7 @@ def main():
                 try:
                     attempt += 1
                     # 将solution到模型的映射传递给process_results函数
-                    result_json = process_results(user_prompt, index1, lang, clients, solution_to_model,args.preference)
+                    result_json = process_results(user_prompt, index1, clients, solution_to_model,args.preference)
                     if result_json:
                         
                         json.dump(result_json, f, ensure_ascii=False)
@@ -309,7 +311,7 @@ def main():
                         result_json = {
                             "index": index1,
                             "preference":args.preference,
-                            "programming_language": lang,
+                            # "programming_language": lang,
                             "evaluation": {model_name: "failed" for model_name in clients.keys()},
                             "responses": {},
                         }
