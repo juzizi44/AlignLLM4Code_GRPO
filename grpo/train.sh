@@ -10,8 +10,8 @@ deepspeed --master_port=28507 --include localhost:4,5  train.py \
     --num_lora_modules -1 \
     --model_name_or_path Qwen/Qwen2.5-Coder-7B-Instruct \
     --meta_data "./data/final_data/grpo_train_data_100_100.jsonl" \
-    --output_dir output_model/202504142232 \
-    --load_from_pretrained "/home/ytan089/AlignLLM4Code_GRPO/grpo/output_model/202504142232" \
+    --output_dir output_model/20250416 \
+    --load_from_pretrained "./output_model/20250415/" \
     --eval_dim "comment" \
     --output_dim 1 \
     --use_special_tokens False \

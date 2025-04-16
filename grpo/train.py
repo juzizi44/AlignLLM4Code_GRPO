@@ -291,9 +291,10 @@ def train():
         peft_config=peft_config,
     )
 
+    resume_from_checkpoint=os.path.join(training_args.load_from_pretrained, "checkpoint-60")
+    # trainer.train()
+    trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
-    trainer.train()
- 
     
     # 保存最终模型
     if training_args.local_rank == -1 or training_args.local_rank == 0:
