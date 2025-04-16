@@ -2,6 +2,7 @@ import json
 import itertools
 import os
 from collections import defaultdict
+import random
 
 def process_test_file(input_file, output_file, max_pairs=None):
     """
@@ -38,6 +39,8 @@ def process_test_file(input_file, output_file, max_pairs=None):
         for item_a, item_b in itertools.combinations(items, 2):
             score_a = item_a.get('final_score', 0)
             score_b = item_b.get('final_score', 0)
+            real_score_a = abs((score_a - 20) / 2)
+            real_score_b = abs((score_b - 20) / 2)
             
             # 创建偏好标签: 1表示A优于B，-1表示B优于A，0表示平局
             if score_a > score_b:
@@ -48,16 +51,18 @@ def process_test_file(input_file, output_file, max_pairs=None):
                 preference = 0
                 
             # 创建偏好数据对
+            # 创建偏好数据对
             pair = {
                 "index": index,
+                "prompt": item_a.get('code-instruction', ''),
+                "code": item_a.get('code', ''),
                 "answerA": item_a['answer'],
                 "answerB": item_b['answer'],
-                "modelA": item_a['generation_model'],
-                "modelB": item_b['generation_model'],
-                "scoreA": score_a,
-                "scoreB": score_b,
-                "preference": preference
+                "real_score_a": real_score_a,
+                "real_score_b": real_score_b,
+                "label": preference
             }
+
             
             preference_pairs.append(pair)
             pair_count += 1
@@ -66,8 +71,9 @@ def process_test_file(input_file, output_file, max_pairs=None):
     
     # 如果指定了最大数量，则只保留前max_pairs条数据
     if max_pairs is not None and max_pairs > 0:
+        random.shuffle(preference_pairs)
         preference_pairs = preference_pairs[:max_pairs]
-        print(f"根据限制，只保留前 {max_pairs} 条偏好数据对")
+        print(f"根据限制，随机保留了 {max_pairs} 条偏好数据对")
     
     # 写入输出文件
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
@@ -111,8 +117,8 @@ def process_all_dimensions(input_dir, output_dir, max_pairs=200):
         print("-" * 50)
 
 if __name__ == "__main__":
-    input_dir = "reward_model/raw_data/final_data/test"
-    output_dir = "/home/ytan089/AlignLLM4Code_GRPO/evaluate/eval_reward_model/solution_and_label"
+    input_dir = "../../reward_model/raw_data/final_data/test"
+    output_dir = "./solution_and_label"
     
     # 处理所有维度
     process_all_dimensions(input_dir, output_dir, max_pairs=200) 
