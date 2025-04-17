@@ -70,6 +70,11 @@ if __name__=="__main__":
     dataset = load_dataset("json", data_files=args.data_file)
     raw_datasets = dataset
     
+    # 对训练数据进行shuffle
+    if "train" in raw_datasets:
+        logger.info("对训练数据进行shuffle...")
+        raw_datasets["train"] = raw_datasets["train"].shuffle(seed=args.seed)
+    
     # 分割数据集为训练集和测试集
     if "test" not in raw_datasets:
         logger.info(f"将数据集分割为训练集和测试集，测试集比例为 {args.test_size}")

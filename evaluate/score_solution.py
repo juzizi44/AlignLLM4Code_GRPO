@@ -195,7 +195,7 @@ def main():
     for name, client in clients.items():
         client.system_prompt = system_prompt_for_eval.SYSTEM_PROMPTS.get_agent(f"{args.preference}")
 
-    input_file = f"/data/AlignLLM4Code_GRPO/evaluate/generated_solution/model_comparison_results.jsonl"
+    input_file = f"./generated_solution/model_comparison_results.jsonl"
     if args.use_ai_test and (args.preference == "robustness" or args.preference == "functionality"):
         ai_test_file = f"/home/fsq/AlignLLM4Code/evaluate/eval_data/result/{args.base_dataset}/ai_test_cases/test_cases_{args.base_dataset}_{args.preference}_{args.start_index}_{args.end_index}.jsonl"
         # 添加文件检查和错误处理
@@ -217,7 +217,7 @@ def main():
             print(f"Unexpected error while reading AI test file: {e}")
             exit(1)
         
-    output_file = f"/data/AlignLLM4Code_GRPO/evaluate/generated_solution/{args.preference}_score_result.jsonl" 
+    output_file = f"./scored_solution/{args.preference}_score_result.jsonl" 
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     # 获取上次处理的最后索引

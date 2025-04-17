@@ -109,7 +109,7 @@ def evaluate_dimension_score(dim_name: str, file_path: str):
 
 
 if __name__ == "__main__":
-    base_path = "/data/AlignLLM4Code_GRPO/evaluate/eval_reward_model/solution_and_label"
+    base_path = "./solution_and_label"
     
     for dim in [
         "comment",
