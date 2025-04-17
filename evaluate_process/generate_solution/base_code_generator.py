@@ -131,8 +131,9 @@ if __name__ == "__main__":
     )
     # num_samples=50 表示最多生成 50 条；若设为 None，则处理全部
     generator.generate_from_file(
-        input_file="../../grpo/data/75k/correct_data/grpo_test_data.jsonl",
-        output_file="./output/base_model/Qwen2.5-Coder-7B-Instruct_solution.jsonl",
-        max_new_tokens=2048,
-        num_samples=10
+        input_file="../test_data_50-50.jsonl",
+        
+        output_file="./output/base_model/base_code_generated.jsonl",
+        max_new_tokens=3000,
+        num_samples=100
     )
