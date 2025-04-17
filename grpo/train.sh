@@ -1,5 +1,6 @@
 export TOKENIZERS_PARALLELISM=false 
-deepspeed --master_port=28507 --include localhost:4,5  train.py \
+
+deepspeed --master_port=28508 --include localhost:4,5 train.py \
     --lora_enable True \
     --freeze_llm False \
     --lora_r 32 \
