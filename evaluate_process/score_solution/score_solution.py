@@ -17,7 +17,7 @@ import concurrent.futures
 from typing import Dict, List, Any
 
 # 加载环境变量
-load_dotenv()
+# load_dotenv()
 
 class SolutionScorer:
     def __init__(self, api_key: str, preference: str, max_index: int = 5,
@@ -88,11 +88,32 @@ class SolutionScorer:
 
     def process_results(self, user_prompt: str, index: int, solution_to_model: Dict[str, str]) -> Dict[str, Any]:
         raw = self.generate_parallel_solutions(user_prompt)
+        print("\n=== Debug Info ===")
+        print("Raw responses:")
+        for m, r in raw.items():
+            print(f"\nModel {m}:")
+            print(r)
+            
         parsed = {m: json.loads(self.fix_result(raw[m])) for m in self.clients}
+        print("\nParsed responses:")
+        for m, p in parsed.items():
+            print(f"\nModel {m}:")
+            print(json.dumps(p, indent=2))
+            
+        print("\nSolution to model mapping:")
+        print(json.dumps(solution_to_model, indent=2))
+        
         evals = {}
         for m, scores in parsed.items():
-            evals[m] = {solution_to_model[k]: scores.get(k, {}).get("solution_final_score")
+            print(f"\nProcessing scores for model {m}:")
+            print("Scores:", json.dumps(scores, indent=2))
+            sol_to_solution = {f"sol{i}": f"solution{i}" for i in range(1, len(solution_to_model) + 1)}
+            evals[m] = {solution_to_model[k]: scores.get(sol_to_solution[k], {}).get("solution_final_score")
                         for k in solution_to_model}
+            print("Processed evals:", json.dumps(evals[m], indent=2))
+            
+        print("\n=== End Debug Info ===")
+        
         return {"index": index, "preference": self.preference,
                 "evaluation": evals, "responses": raw}
 
@@ -118,11 +139,11 @@ class SolutionScorer:
         to_process = dfs[0].head(self.max_index)
         print(f"\n需要处理的index列表：{list(to_process['index'])}\n")
 
-        
         start = time.time()
         with open(output_file, 'a', encoding='utf-8', buffering=1) as out:
-            for idx, row in to_process.iterrows():
-                sols = [df.at[idx, 'response'] for df in dfs]
+            for _, row in to_process.iterrows():
+                actual_index = row['index']  # 使用实际的index值
+                sols = [df[df['index'] == actual_index]['response'].iloc[0] for df in dfs]
                 keys = [f"ans{i+1}" for i in range(len(sols))]
                 mapping = dict(zip(keys, sols))
                 random.shuffle(keys)
@@ -140,16 +161,16 @@ class SolutionScorer:
                 # 重试并写入
                 for attempt in range(2):
                     try:
-                        res = self.process_results(user_prompt, idx, sol_map)
+                        res = self.process_results(user_prompt, actual_index, sol_map)  # 使用实际的index值
                         out.write(json.dumps(res, ensure_ascii=False) + '\n')
                         break
                     except Exception as e:
                         if attempt == 1:
-                            fail = {"index": idx, "preference": self.preference,
+                            fail = {"index": actual_index, "preference": self.preference,  # 使用实际的index值
                                     "evaluation": {m: 'failed' for m in self.clients}, "responses": {}}
                             out.write(json.dumps(fail, ensure_ascii=False) + '\n')
                         time.sleep(1)
-                print(f"Processed {idx}, time: {self.format_time(time.time()-start)}")
+                print(f"Processed index {actual_index}, time: {self.format_time(time.time()-start)}")
         print(f"Done in {self.format_time(time.time()-start)}")
 
 
@@ -159,11 +180,13 @@ if __name__ == "__main__":
         'preference': 'efficiency',
         'api_key': os.getenv('OPENAI_API_KEY', ''),
         'input_files': [
-            '/data/AlignLLM4Code_GRPO/evaluate_process/generate_solution/output/base_model/base_code_generated.jsonl',
-            '/data/AlignLLM4Code_GRPO/evaluate_process/generate_solution/output/dpo/dpo_generated.jsonl'
+            '../generate_solution/output/base_model/base_code_generated.jsonl',
+            '../generate_solution/output/dpo/dpo_generated.jsonl',
+            '../generate_solution/output/grpo/grpo_generated.jsonl',
+            '../generate_solution/output/openai_model/gpt_generated.jsonl'
         ],
         'output_file': './scored_solution/efficiency_scores.jsonl',
-        'max_index': 2,
+        'max_index': 10,
         'use_ai_test': False
     }
     scorer = SolutionScorer(
